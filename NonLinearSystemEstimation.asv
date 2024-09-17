@@ -1,0 +1,28 @@
+diff = zeros(6,6);
+
+input = audioread("input/guitar.wav");
+refrence = audioread("refrence/guitar_dist.wav");
+data = iddata(refrence, input, 1/fs);
+
+input2 = audioread("input/guitar2.wav");
+refrence2 = audioread("refrence/guitar2_dist.wav");
+
+parfor nb = 1:6
+    for nf = 1:6
+        %% Create nonlinear system
+   
+        model = nlhw(data, [nb nf 1]);
+        
+        %% Simulate
+      
+        output2 = sim(model, input2);
+        
+        diff(nb,nf) = mean(abs(output2 - refrence2));
+
+        disp("np = " + string(nb) + ", nf = " + string(nf));
+    end
+end
+
+%% Plot
+
+surf(diff);

@@ -4,10 +4,12 @@ sweep_reverb = audioread("refrence/sweep_reverb.wav");
 %% Calculate impulse
 
 sweep_inv = flip(sweep);
-sweep_inv = sweep_inv .* tukeywin(length(sweep_inv), 0.2);
+sweep_inv = sweep_inv .* tukeywin(length(sweep_inv), 0.5);
 
-h = ifft(fft(sweep_reverb) .* fft(sweep_inv));
+H = ifft(fft(sweep_reverb) .* fft(sweep_inv));
+
 h = h(1:length(h) / 2);
+h = h / max(abs(h));
 
 audiowrite("output/impulse.wav",h, fs);
 

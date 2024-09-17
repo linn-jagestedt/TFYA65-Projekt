@@ -1,0 +1,28 @@
+ %% Generate Chrip
+
+fs = 48000;
+fmax = 20000;
+fmin = 20;
+T = 4;
+t = 1/fs:1/fs:T;
+
+sweep = 0.5 * chirp(t, fmin, T, fmax, "linear");
+audiowrite("sweep.wav",sweep, fs);
+
+%% Create linar system
+
+sweep_reverb = audioread("sweep_reverb.wav");
+
+data = iddata(sweep_reverb, sweep', 1/fs);
+
+model = oe(data, 2);
+
+guitar = audioread("guitar.wav");
+
+guitar_reverb = sim(model, guitar);
+
+%% Create linear system
+
+audiowrite("guitar_reverb.wav", guitar_reverb, fs);
+
+plot(abs(guitar - guitar_reverb));
