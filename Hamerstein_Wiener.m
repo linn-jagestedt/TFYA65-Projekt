@@ -1,7 +1,7 @@
 fs = 48000;
 
 input = audioread("input/guitar.wav");
-refrence = audioread("refrence/guitar_dist.wav");
+refrence = audioread("refrence/guitar_rotary.wav");
 
 input2 = audioread("input/guitar2.wav");
 
@@ -13,4 +13,4 @@ model = nlhw(iddata(refrence, input, 1/fs), [3 1 1]);
 
 output2 = sim(model, input2);
 
-audiowrite("output/guitar2_dist.wav", output2, fs);
+audiowrite("output/guitar2_rotary.wav", output2, fs);
