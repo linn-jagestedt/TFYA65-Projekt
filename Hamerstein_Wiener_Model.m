@@ -1,31 +1,20 @@
-function outputData = HamersteinWienerModel(inputData, refrenceData, orders, inputNonlinearlity, ouputNonlinearlity, fs)
+function outputData = Hamerstein_Wiener_Model(inputData, refrenceData, orders, fs)
 %% Create system
 
 data = iddata(refrenceData(1), inputData(1), 1/fs);
-system = nlhw(data, orders, inputNonlinearlity, ouputNonlinearlity);
+system = nlhw(data, orders, 'idSaturation', 'idSaturation');
 
 %% Find model parameters
 
 [num, den] = tfdata(system.LinearModel);
 
-num = cell2mat(num);
-den = cell2mat(den);
+disp("numerator: " + string(cell2mat(num)));
+disp("denominator: " + string(cell2mat(den)));
 
-%% Simulate system
-if isa(system.inputNonlinearity, 'idSaturation') && ...
-   isa(system.outputNonlinearity, 'idSaturation')    
-    for i = 1:length(inputData)
-        output = hwimplementation( ...
-            cell2mat(inputData(i)), ...
-            system.InputNonlinearity, ...
-            num, ...
-            den, ...
-            system.OutputNonlinearity ...
-        );
-    
-        outputData(i) = {output};
-    end
-else
-    outputData = sim(system, inputData);
-end
+disp("input saturation interval" + string(system.InputNonlinearity.LinearInterval));
+disp("output saturation interval" + string(system.OutputNonlinearity.LinearInterval));
+
+%% Simulate system 
+
+outputData = sim(system, inputData);
 

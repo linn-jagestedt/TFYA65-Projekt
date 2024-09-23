@@ -6,18 +6,12 @@ system = tfest(data, np, nz, delay);
 
 %% Find model parameters
 
-[num, den] = tfdata(system);
+[num, den] = tfdata(system.LinearModel);
 
-num = cell2mat(num);
-den = cell2mat(den);
+disp("numerator: " + string(cell2mat(num)));
+disp("denominator: " + string(cell2mat(den)));
+
+%% Simulate system 
 
 outputData = sim(system, inputData);
-
-for i = 1:length(inputData)
-    %output = transfer( ...
-    %    cell2mat(inputData(i)), ...
-    %    num, ...
-    %    den ...
-    %);
-end
 
