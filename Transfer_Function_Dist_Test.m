@@ -24,8 +24,8 @@ fs = 44100;
 
 data = iddata(refrence, input, 1/fs);
 
-np = 4; % number zeros in the system
-nz = 1; % number polys in the system
+np = 3; % number zeros in the system
+nz = 1; % number poles in the system
 T = 1; % time delay in the system
 
 system = tfest(data, np, nz, T);
@@ -54,7 +54,7 @@ audiowrite("output/HW_guitar4_dist.wav", testOutput, fs);
 
 % Vi använder detta för att kolla kvalitén av vår output! Mindre är bättre!
 error = rms(testRefrence - testOutput);
-disp("Root mean square: " + error);
+disp("Root mean square error: " + error);
 
 %% Plot signals in time-domain
 
