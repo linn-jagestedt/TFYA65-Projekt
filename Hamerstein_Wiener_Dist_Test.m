@@ -1,22 +1,24 @@
 %% Read  training data
 
+filterName = 'OD300_2';
+    
 input(1) = {audioread("input/sweep.wav")};
-refrence(1) = {audioread("refrence/sweep_dist.wav")};
+refrence(1) = {audioread("refrence/" + filterName +"/sweep.wav")};
 
 input(2) = {audioread("input/keys1.wav")};
-refrence(2) = {audioread("refrence/keys1_dist.wav")};
+refrence(2) = {audioread("refrence/" + filterName +"/keys1.wav")};
 
 input(3) = {audioread("input/keys2.wav")};
-refrence(3) = {audioread("refrence/keys2_dist.wav")};
+refrence(3) = {audioread("refrence/" + filterName +"/keys2.wav")};
 
 input(4) = {audioread("input/guitar1.wav")};
-refrence(4) = {audioread("refrence/guitar1_dist.wav")};
+refrence(4) = {audioread("refrence/" + filterName +"/guitar1.wav")};
 
 input(5) = {audioread("input/guitar2.wav")};
-refrence(5) = {audioread("refrence/guitar2_dist.wav")};
+refrence(5) = {audioread("refrence/" + filterName +"/guitar2.wav")};
 
 input(6) = {audioread("input/guitar3.wav")};
-refrence(6) = {audioread("refrence/guitar3_dist.wav")};
+refrence(6) = {audioread("refrence/" + filterName +"/guitar3.wav")};
 
 %% Create system
 
@@ -25,13 +27,14 @@ fs = 44100;
 data = iddata(refrence, input, 1/fs);
 
 opt = nlhwOptions;
-opt.Regularization.Lambda = 0.1;
+opt.Regularization.Lambda = 0;
+opt.SearchMethod = 'lm';
 
-np = 3; % number zeros in the system
-nz = 1; % number poles in the system
-T = 1; % time delay in the system
+nb = 3; % number zeros in the system
+nf = 1; % number poles in the system
+nk = 0; % time delay in the system
 
-system = nlhw(data, [np nz T], 'idSaturation', 'idSaturation', opt);
+system = nlhw(data, [nb nf nk], 'idSaturation', 'idSaturation', opt);
 
 %% Get model parameters
 
@@ -46,7 +49,7 @@ disp("output saturation interval: " + string(system.OutputNonlinearity.LinearInt
 %% Read test data
 
 testInput = audioread("input/guitar4.wav");
-testRefrence = audioread("refrence/guitar4_dist.wav");
+testRefrence = audioread("refrence/" + filterName + "/guitar4.wav");
 
 %% Simulate system with test data
 
@@ -54,7 +57,7 @@ testOutput = sim(system, testInput);
 
 %% Write output
 
-audiowrite("output/HW_guitar4_dist.wav", testOutput, fs);
+audiowrite("output/" + filterName + "/guitar4.wav", testOutput, fs);
 
 %% Calculate mean square error
 
