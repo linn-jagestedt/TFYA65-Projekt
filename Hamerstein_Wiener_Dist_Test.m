@@ -1,30 +1,27 @@
+fs = 44100;
+
+filterName = 'Audacity_dist';
+fileName = "keys2";
+
 %% Read  training data
-
-filterName = 'OD300_2';
     
-input(1) = {audioread("input/sweep.wav")};
-refrence(1) = {audioread("refrence/" + filterName +"/sweep.wav")};
+train_input = audioread("input/log_sweep.wav");
+train_refrence = audioread("refrence/" + filterName +"/log_sweep.wav");
 
-input(2) = {audioread("input/keys1.wav")};
-refrence(2) = {audioread("refrence/" + filterName +"/keys1.wav")};
+train_refrence = removeTimeShift(train_input, train_refrence);
+train_refrence = train_refrence(1:length(train_input));
 
-input(3) = {audioread("input/keys2.wav")};
-refrence(3) = {audioread("refrence/" + filterName +"/keys2.wav")};
+%% Read test data
 
-input(4) = {audioread("input/guitar1.wav")};
-refrence(4) = {audioread("refrence/" + filterName +"/guitar1.wav")};
+input = audioread("input/" + fileName +  ".wav");
+refrence = audioread("refrence/" + filterName + "/" + fileName +  ".wav");
 
-input(5) = {audioread("input/guitar2.wav")};
-refrence(5) = {audioread("refrence/" + filterName +"/guitar2.wav")};
-
-input(6) = {audioread("input/guitar3.wav")};
-refrence(6) = {audioread("refrence/" + filterName +"/guitar3.wav")};
+refrence = removeTimeShift(input, refrence);
+refrence = refrence(1:length(input));
 
 %% Create system
 
-fs = 44100;
-
-data = iddata(refrence, input, 1/fs);
+data = iddata(train_refrence, train_input, 1/fs);
 
 opt = nlhwOptions;
 opt.Regularization.Lambda = 0;
@@ -46,41 +43,42 @@ disp("denominator: " + string(cell2mat(den)));
 disp("input saturation interval: " + string(system.InputNonlinearity.LinearInterval));
 disp("output saturation interval: " + string(system.OutputNonlinearity.LinearInterval));
 
-%% Read test data
-
-testInput = audioread("input/guitar4.wav");
-testRefrence = audioread("refrence/" + filterName + "/guitar4.wav");
-
 %% Simulate system with test data
 
-testOutput = sim(system, testInput);
+y = sim(system, input);
+
+y = removeTimeShift(refrence, y);
+y = y / max(abs(y)) * max(abs(refrence));
 
 %% Write output
 
-audiowrite("output/" + filterName + "/guitar4.wav", testOutput, fs);
+audiowrite("output/optimization model/" + filterName + "/" + fileName +  ".wav", y, fs);
 
 %% Calculate mean square error
 
-% Vi använder detta för att kolla kvalitén av vår output! Mindre är bättre!
-error = rms(testRefrence - testOutput);
+error = rms(refrence - y);
 disp("Root mean square error: " + error);
 
 %% Plot signals in time-domain
 
-n = length(testInput);
+close all;
+figure();
+
+n = length(input);
 t = linspace(0, n * 1/fs, n);
 
-% Input signal
-subplot(3,1,1); plot(t, testInput); 
-ylabel("Amplitude"); xlabel("Time (s)"); title("Signal Input");
+subplot(2,2,1); plot(t, input);
+ylabel("Amplitude"); xlabel("Time (s)"); title("Input Signal");
 axis([0 1/fs*n -1 1]);
 
-% Reference signal
-subplot(3,1,2); plot(t, testRefrence); 
+subplot(2,2,2); plot(t, refrence);
 ylabel("Amplitude"); xlabel("Time (s)"); title("Refrence Signal");
 axis([0 1/fs*n -1 1]);
 
-% Output signal
-subplot(3,1,3); plot(t, testOutput); 
+subplot(2,2,3); plot(t, y);
 ylabel("Amplitude"); xlabel("Time (s)"); title("Output Signal");
+axis([0 1/fs*n -1 1]);
+
+subplot(2,2,4); plot(t, y - refrence);
+ylabel("Amplitude"); xlabel("Time (s)"); title("Diffrence");
 axis([0 1/fs*n -1 1]);
